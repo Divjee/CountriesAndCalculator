@@ -60,24 +60,34 @@ namespace CtoHomework.Controllers
         [HttpGet("calculate/{input}")]
         public IActionResult Calculate(string input)
         {
-            bool isMatch = Regex.IsMatch(input, @"^(\d{1,5}[\+\-\*\/]){0,4}\d{1,5}$");
-
-            if (string.IsNullOrEmpty(input) || !isMatch)
+            // Check if the input contains no more than 5 digits
+            if (!Regex.IsMatch(input, @"^\D*\d\D*\d?\D*\d?\D*\d?\D*\d?\D*$"))
             {
-                return BadRequest("Invalid operation");
+                return BadRequest("Input must contain no more than 5 numbers.");
             }
 
-            var table = new DataTable();
-            double result = Convert.ToDouble(table.Compute(input, null));
+            input = input.Replace("div", "/");
+
+            DataTable dt = new DataTable();
+            object result = dt.Compute(input, "");
+            double resultAsDouble = Convert.ToDouble(result);
 
             Calculator calculation = new Calculator();
             calculation.Operation = input;
-            calculation.Result = result;
+            calculation.Result = resultAsDouble;
 
             _context.Calculations.Add(calculation);
             _context.SaveChanges();
-            return Ok(result);
+
+            return Ok(calculation);
         }
+
+
+
+
+
+
+
         [HttpGet("compare/{input}")]
         public IActionResult GetHighestAndLowest(string input)
         {
